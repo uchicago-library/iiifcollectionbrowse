@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Collection Browser{% endblock %}
+{% block body %}
+<h1>{{ cname }}</h1>
+{% if members %}
+    <h2>Members</h2>
+    <ul>
+    {% for m in members %}
+    <li>
+        {% if m['@type'] == "sc:Collection" %}
+            <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
+        {% else %}
+            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
+        {% endif %}
+        </a></li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% if collections %}
+    <h2>Sub-Collections</h2>
+    <ul>
+    {% for c in collections %}
+    <li>y$<a href="{{ c['t_url'] }}">{{ c['label'] }}</a></li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% if manifests %}
+    <h2>Manifests</h2>
+    <ul>
+    {% for m in manifests %}
+    <li><a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}</a></li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
