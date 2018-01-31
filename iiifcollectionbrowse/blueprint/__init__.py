@@ -25,7 +25,7 @@ VIEWER_URL = "https://universalviewer.io/uv.html"
 # VIEWER_URL = "http://localhost:4000/index.html#"
 
 
-@BLUEPRINT.route("/c/<path:c_url>")
+@BLUEPRINT.route("/<path:c_url>")
 def collection(c_url):
     resp = requests.get(c_url)
     resp.raise_for_status()
@@ -42,7 +42,7 @@ def collection(c_url):
     # build template urls
     for x in collections:
         x['t_url'] = url_for(".collection", c_url=x['@id'])
-    for x in rj.get("members"):
+    for x in members:
         if x['@type'] == "sc:Collection":
             x['t_url'] = url_for(".collection", c_url=x['@id'])
     return render_template(
