@@ -24,6 +24,68 @@ BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
 VIEWER_URL = "https://universalviewer.io/uv.html"
 # VIEWER_URL = "http://localhost:4000/index.html#"
 
+def get_thumbnail(rec, width=200, height=200):
+    # If we pass an identifier just try and
+    # get the record from the identifier.
+    if not isinstance(rec, dict):
+        try:
+            resp = requests.get(rec)
+            resp.raise_for_status()
+            rec = resp.json()
+        except:
+            # TODO: handle failure
+            raise
+    # Try and update the record from its URI
+    try:
+        remote_rec_resp = requests.get(rec['@id'])
+        remote_rec_resp.raise_for_status()
+        remote_rec_json = remote_rec_resp.json()
+        rec.update(remote_rec_json)
+    except:
+        pass
+    # If one is hardcoded
+    if rec.get('thumbnail'):
+        return rec['thumbnail']['@id']+"/full/{},{}/0/default.jpg".format(width, height)
+    # Dynamic functionality - get the first image that should be relevant
+    if rec['@type'] == "sc:Collection":
+        # prefer the first member, if it exists
+        if rec.get("members"):
+            return get_thumbnail(rec['members'][0])
+        # otherwise try for manifests
+        elif rec.get("manifests"):
+            return get_thumbnail(rec['manifests'][0])
+        # finally check for subcollections
+        elif rec.get("collections"):
+            return get_thumbnail(rec['collections'][0])
+        else:
+            raise ValueError()
+    elif rec['@type'] == "sc:Manifest":
+        # sequences MUST be > 0
+        return get_thumbnail(rec['sequences'][0])
+    elif rec['@type'] == "sc:Sequence":
+        # canvases MUST be > 0
+        return get_thumbnail(rec['canvases'][0])
+    elif rec['@type'] == "sc:Canvas":
+        if rec.get('images'):
+            return get_thumbnail(rec['images'][0])
+        else:
+            raise ValueError()
+    # We made it!
+    elif rec['@type'] == "oa:Annotation":
+        # Be sure we haven't stumbled into something
+        # that isn't an image
+        if rec.get("resource") is None:
+            raise ValueError()
+        # TODO: Actually parse the URL
+        # Time for a hack for just the moment
+        x = rec['resource']['@id']
+        return x.split(".tif")[0] + ".tif" + "/full/{},{}/0/default.jpg".format(width, height)
+    else:
+        raise ValueError()
+
+
+
+
 
 @BLUEPRINT.route("/<path:c_url>")
 def collection(c_url):
@@ -45,11 +107,30 @@ def collection(c_url):
     for x in members:
         if x['@type'] == "sc:Collection":
             x['t_url'] = url_for(".collection", c_url=x['@id'])
-    return render_template(
-        "collection.html",
-        viewer_url=VIEWER_URL,
-        cname=rj['label'],
-        members=members,
-        collections=collections,
-        manifests=manifests
-    )
+    # Handle thumbnail finding for viewingHint == individuals
+    if rj.get('viewingHint') == "individuals":
+        for x in members:
+            pass
+        for x in collections:
+            pass
+        for x in manifests:
+            pass
+        return render_template(
+            "collection_individuals.html",
+            viewer_url=VIEWER_URL,
+            cname=rj['label'],
+            cdesc=rj.get('description'),
+            members=members,
+            collections=collections,
+            manifests=manifests
+        )
+    else:
+        return render_template(
+            "collection.html",
+            viewer_url=VIEWER_URL,
+            cname=rj['label'],
+            cdesc=rj.get('description'),
+            members=members,
+            collections=collections,
+            manifests=manifests
+        )
