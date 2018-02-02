@@ -8,32 +8,62 @@
 {% endif %}
 {% if members %}
     <h2>Members</h2>
-    <ul>
+    <table border="1x solid black">
     {% for m in members %}
-    <li>
+    <tr>
+        <td align="center"><img src="{{ m['thumb_url'] }}"></td>
+        <td>
         {% if m['@type'] == "sc:Collection" %}
             <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
         {% else %}
             <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
         {% endif %}
-        </a></li>
+            </a>
+        </td>
+        </tr>
     {% endfor %}
-    </ul>
+    </table>
 {% endif %}
 {% if collections %}
     <h2>Sub-Collections</h2>
-    <ul>
-    {% for c in collections %}
-    <li>y$<a href="{{ c['t_url'] }}">{{ c['label'] }}</a></li>
+    <table border="1x solid black">
+    {% for m in collections %}
+    <tr>
+        <td align="center"><img src="{{ m['thumb_url'] }}"></td>
+        <td>
+        {% if m['@type'] == "sc:Collection" %}
+            <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
+        {% else %}
+            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
+        {% endif %}
+            </a>
+        </td>
+        </tr>
     {% endfor %}
-    </ul>
+    </table>
 {% endif %}
 {% if manifests %}
     <h2>Manifests</h2>
-    <ul>
+    <table border="1x solid black">
     {% for m in manifests %}
-    <li><a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}</a></li>
+    <tr>
+        <td align="center"><img src="{{ m['thumb_url'] }}"></td>
+        <td>
+        {% if m['@type'] == "sc:Collection" %}
+            <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
+        {% else %}
+            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
+        {% endif %}
+            </a>
+        </td>
+        </tr>
     {% endfor %}
-    </ul>
+    </table>
+{% endif %}
+{% if prev_page %}
+<a href="{{ prev_page }}">Previous</a> 
+{% endif %}
+{% if next_page %}
+<a href="{{ next_page }}">Next</a>
 {% endif %}
 {% endblock %}

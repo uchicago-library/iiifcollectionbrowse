@@ -3,7 +3,7 @@ iiifcollectionbrowse
 """
 import logging
 
-from flask import Blueprint, render_template, url_for
+from flask import Blueprint, render_template, url_for, request
 
 import requests
 
@@ -21,12 +21,14 @@ BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
                       static_folder='static')
 
 
-VIEWER_URL = "https://universalviewer.io/uv.html"
-# VIEWER_URL = "http://localhost:4000/index.html#"
+VIEWER_URL = "https://iiif-viewer.lib.uchicago.edu/uv/uv.html#"
 
-def get_thumbnail(rec, width=200, height=200):
+
+def get_thumbnail(rec, width=200, height=200, preserve_ratio=True):
     # If we pass an identifier just try and
     # get the record from the identifier.
+    if preserve_ratio:
+        width = "!"+str(width)
     if not isinstance(rec, dict):
         try:
             resp = requests.get(rec)
@@ -84,9 +86,6 @@ def get_thumbnail(rec, width=200, height=200):
         raise ValueError()
 
 
-
-
-
 @BLUEPRINT.route("/<path:c_url>")
 def collection(c_url):
     resp = requests.get(c_url)
@@ -95,6 +94,11 @@ def collection(c_url):
     members = []
     collections = []
     manifests = []
+    page = request.args.get("page", 1)
+    try:
+        page = int(page)
+    except:
+        page = 1
     if rj.get("members"):
         members = rj['members']
     if rj.get('collections'):
@@ -108,18 +112,33 @@ def collection(c_url):
         if x['@type'] == "sc:Collection":
             x['t_url'] = url_for(".collection", c_url=x['@id'])
     # Handle thumbnail finding for viewingHint == individuals
-    if rj.get('viewingHint') == "individuals":
-        for x in members:
-            pass
-        for x in collections:
-            pass
-        for x in manifests:
-            pass
+    if rj.get('viewingHint') == "individuals" and page > 0:
+        # Paginate if we're doing thumbnails - 30 results per page max
+        total = max(len(members), len(collections), len(manifests))
+        start = (page-1)*10
+        end = page*10
+        members = members[start:end]
+        collections = collections[start:end]
+        manifests = manifests[start:end]
+        if end > total:
+            next_page = None
+        else:
+            next_page = "/{}?page={}".format(c_url, str(page+1))
+        prev_page = None
+        if page > 1:
+            prev_page =  "/{}?page={}".format(c_url, str(page-1))
+        for x in members + collections + manifests:
+            try:
+                x['thumb_url'] = get_thumbnail(x)
+            except:
+                x['thumb_url'] = ""
         return render_template(
             "collection_individuals.html",
             viewer_url=VIEWER_URL,
             cname=rj['label'],
             cdesc=rj.get('description'),
+            next_page=next_page,
+            prev_page=prev_page,
             members=members,
             collections=collections,
             manifests=manifests
