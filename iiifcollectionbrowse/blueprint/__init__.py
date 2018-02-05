@@ -127,6 +127,7 @@ def collection(c_url):
         members = members[start:end]
         collections = collections[start:end]
         manifests = manifests[start:end]
+        list_view = None
         if total > 10:
             list_view = "/{}?page=-1".format(c_url)
         if end > total:
@@ -142,7 +143,7 @@ def collection(c_url):
         # in important - otherwise thumbnails won't match.
         results = [None] * len(members+collections+manifests)
         for i, x in enumerate(members + collections + manifests):
-            x['thumb_thread'] = Thread(target=threaded_thumbnails, args=(x, results, i))
+            x['thumb_thread'] = Thread(target=threaded_thumbnails, args=(x['@id'], results, i))
             x['thumb_thread'].start()
         for i, x in enumerate(members + collections + manifests):
             x['thumb_thread'].join(timeout=10)

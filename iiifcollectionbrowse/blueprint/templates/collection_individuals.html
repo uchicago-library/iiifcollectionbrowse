@@ -1,94 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Collection Browser{% endblock %}
 {% block body %}
-<h1>{{ cname }}</h1>
-<table width=100%>
+<div style="background-color:#800000;">
+    <h1><font color='white'>{{ cname }}</font></h1>
+</div>
+<div style="margin: 0 1%;">
+<table width="100%" align="center">
     <tr>
         <td>
             {% if prev_page %}
-            <a href="{{ prev_page }}">Previous</a> 
+            <a href="{{ prev_page }}">Previous Page</a> 
             {% endif %}
         </td>
         <td align="right">
             {% if next_page %}
-            <a href="{{ next_page }}">Next</a>
+            <a href="{{ next_page }}">Next Page</a>
             {% endif %}
         </td>
     </tr>
 </table>
 {% if cdesc %}
-<h2>Description</h2>
+<h2><font color='#800000'>Description</font></h2>
 <p>{{ cdesc }}</p>
 {% endif %}
-{% if members %}
-    <h2>Members</h2>
-    <table border="1x solid black">
-    {% for m in members %}
+{% if members or manifests or collections %}
+<h2><font color="#800000">Resources</font></h2>
+    <table class="table">
+        <thead>
+        <tr align="center">
+            <th>Thumbnail</th>
+            <th>Label</th>
+        </tr>
+        </thead>
+    <tbody>
+    {% for m in members+collections+manifests %}
     <tr>
-        <td align="center"><img src="{{ m['thumb_url'] }}"></td>
-        <td>
-        {% if m['@type'] == "sc:Collection" %}
-            <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
-        {% else %}
-            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
-        {% endif %}
+        <td align="center" style="background-color:#D6D6CE; width: 225px;">
+            <img src="{{ m['thumb_url'] }}">
+        </td>
+        <td style="width: 225px;" align="center">
+            {% if m['@type'] == "sc:Collection" %}
+            <a href="{{ m['t_url'] }}">{{ m['label'] }}
+            {% else %}
+            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}
+            {% endif %}
             </a>
         </td>
-        </tr>
+    </tr>
     {% endfor %}
+    </tbody>
     </table>
 {% endif %}
-{% if collections %}
-    <h2>Sub-Collections</h2>
-    <table border="1x solid black">
-    {% for m in collections %}
-    <tr>
-        <td align="center"><img src="{{ m['thumb_url'] }}"></td>
-        <td>
-        {% if m['@type'] == "sc:Collection" %}
-            <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
-        {% else %}
-            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
-        {% endif %}
-            </a>
-        </td>
-        </tr>
-    {% endfor %}
-    </table>
-{% endif %}
-{% if manifests %}
-    <h2>Manifests</h2>
-    <table border="1x solid black">
-    {% for m in manifests %}
-    <tr>
-        <td align="center"><img src="{{ m['thumb_url'] }}"></td>
-        <td>
-        {% if m['@type'] == "sc:Collection" %}
-            <a href="{{ m['t_url'] }}">Subcollection: {{ m['label'] }}
-        {% else %}
-            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">Manifest: {{ m['label'] }}
-        {% endif %}
-            </a>
-        </td>
-        </tr>
-    {% endfor %}
-    </table>
-{% endif %}
-<table width=100%>
+<table width="100%" align="center">
     <tr>
         <td>
             {% if prev_page %}
-            <a href="{{ prev_page }}">Previous</a> 
+            <a href="{{ prev_page }}">Previous Page</a> 
+            {% endif %}
+        </td>
+        <td align="center">
+            {% if list_view %}
+            <p align="center"><a href="{{ list_view }}">List View</a></p>
             {% endif %}
         </td>
         <td align="right">
             {% if next_page %}
-            <a href="{{ next_page }}">Next</a>
+            <a href="{{ next_page }}">Next Page</a>
             {% endif %}
         </td>
     </tr>
 </table>
-{% if list_view %}
-<p align="center"><a href="{{ list_view }}">List View</a></p>
-{% endif %}
+</div>
 {% endblock %}
