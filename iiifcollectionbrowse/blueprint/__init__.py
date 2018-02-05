@@ -25,28 +25,38 @@ BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
 VIEWER_URL = "https://iiif-viewer.lib.uchicago.edu/uv/uv.html#"
 REQUESTS_TIMEOUT = 1/10
 NO_THUMB_IMG_URL = ""
+COLORS = {
+    "contrast_color": "#800000",
+    "thumbnail_backdrop": "#D6D6CE"
+}
 
 
 def get_thumbnail(rec, width=200, height=200, preserve_ratio=True):
-    # If we pass an identifier just try and
-    # get the record from the identifier.
     if preserve_ratio:
         width = "!"+str(width)
+    # If we pass an identifier just try and
+    # get the record from the identifier.
+    updated = False
     if not isinstance(rec, dict):
         try:
             resp = requests.get(rec, timeout=REQUESTS_TIMEOUT)
             resp.raise_for_status()
             rec = resp.json()
+            updated = True
         except Exception:
             # TODO: handle failure?
             raise
-    # Try and update the record from its URI
+    # Try and update the record from its URI, if we didn't
+    # already just download it.
     try:
-        remote_rec_resp = requests.get(rec['@id'], timeout=REQUESTS_TIMEOUT)
-        remote_rec_resp.raise_for_status()
-        remote_rec_json = remote_rec_resp.json()
-        rec.update(remote_rec_json)
+        if not updated:
+            remote_rec_resp = requests.get(rec['@id'], timeout=REQUESTS_TIMEOUT)
+            remote_rec_resp.raise_for_status()
+            remote_rec_json = remote_rec_resp.json()
+            rec.update(remote_rec_json)
     except Exception:
+        # Lets hope we have a complete record on our hands, instead
+        # of a stub with just identifiers in it.
         pass
     # If one is hardcoded
     if rec.get('thumbnail'):
@@ -90,22 +100,21 @@ def get_thumbnail(rec, width=200, height=200, preserve_ratio=True):
 
 
 def threaded_thumbnails(identifier, result, index):
+    # Wrap up this operation so we can use this function
+    # as the target of a threading.Thread
     result[index] = get_thumbnail(identifier)
 
 
 @BLUEPRINT.route("/<path:c_url>")
 def collection(c_url):
+    # Try to pull the collection record
     resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
     resp.raise_for_status()
     rj = resp.json()
+    # Parse the record
     members = []
     collections = []
     manifests = []
-    page = request.args.get("page", 1)
-    try:
-        page = int(page)
-    except Exception:
-        page = 1
     if rj.get("members"):
         members = rj['members']
     if rj.get('collections'):
@@ -118,25 +127,33 @@ def collection(c_url):
     for x in members:
         if x['@type'] == "sc:Collection":
             x['t_url'] = url_for(".collection", c_url=x['@id'])
-    # Handle thumbnail finding for viewingHint == individuals
+    # Get if the current request is paginated or not
+    page = request.args.get("page", 1)
+    try:
+        page = int(page)
+    except Exception:
+        page = 1
+    # Thumbnail view - paginated
     if rj.get('viewingHint') == "individuals" and page > 0:
-        # Paginate if we're doing thumbnails - 30 results per page max
+        # 30 results per page max, to not block too long on
+        # dynamically generating thumbnails even in bad cases
         total = max(len(members), len(collections), len(manifests))
         start = (page-1)*10
         end = page*10
+        # Generate sublists of just the stuff for this page
         members = members[start:end]
         collections = collections[start:end]
         manifests = manifests[start:end]
-        list_view = None
-        if total > 10:
-            list_view = "/{}?page=-1".format(c_url)
+        # Assemble page links and stuff
+        list_view = "{}?page=-1".format(url_for(".collection", c_url=c_url))
         if end > total:
             next_page = None
         else:
-            next_page = "/{}?page={}".format(c_url, str(page+1))
+            next_page = "{}?page={}".format(url_for(".collection", c_url=c_url), str(page+1))
         prev_page = None
         if page > 1:
-            prev_page = "/{}?page={}".format(c_url, str(page-1))
+            prev_page = "{}?page={}".format(url_for(".collection", c_url=c_url), str(page-1))
+        # Handle thumbnail finding for viewingHint == individuals
         # https://stackoverflow.com/questions/6893968/
         # how-to-get-the-return-value-from-a-thread-in-python
         # Note: This makes the order the lists are concat'd together
@@ -152,7 +169,7 @@ def collection(c_url):
             else:
                 x['thumb_url'] = NO_THUMB_IMG_URL
         return render_template(
-            "collection_individuals.html",
+            "collection_thumbnails.html",
             viewer_url=VIEWER_URL,
             cname=rj['label'],
             cdesc=rj.get('description'),
@@ -161,15 +178,22 @@ def collection(c_url):
             prev_page=prev_page,
             members=members,
             collections=collections,
-            manifests=manifests
+            manifests=manifests,
+            colors=COLORS
         )
+    # List view - no pagination
     else:
+        thumbnail_view = None
+        if rj.get('viewingHint') == 'individuals':
+            thumbnail_view = "{}?page=1".format(url_for(".collection", c_url=c_url))
         return render_template(
-            "collection.html",
+            "collection_list.html",
             viewer_url=VIEWER_URL,
             cname=rj['label'],
             cdesc=rj.get('description'),
             members=members,
             collections=collections,
-            manifests=manifests
+            manifests=manifests,
+            colors=COLORS,
+            thumbnail_view=thumbnail_view
         )

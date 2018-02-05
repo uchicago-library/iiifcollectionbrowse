@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Collection Browser{% endblock %}
+{% block body %}
+<div style="background-color:{{ colors['contrast_color']}};">
+    <h1><font color='white'>{{ cname }}</font></h1>
+</div>
+<div style="margin: 0 1%;">
+{% if cdesc %}
+<h2><font color='{{ colors['contrast_color'] }}'>Description</font></h2>
+<p>{{ cdesc }}</p>
+{% endif %}
+{% if members or manifests or collections %}
+<h2><font color="{{ colors['contrast_color'] }}">Resources</font></h2>
+<ul>
+    {% for m in members+manifests+collections %}
+    <li>
+        {% if m['@type'] == "sc:Collection" %}
+        <a href="{{ m['t_url'] }}">{{ m['label'] }}</a>
+        {% else %}
+        <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+<table width="100%" align="center">
+    <tr>
+        <td align="center">
+            {% if thumbnail_view %}
+            <p align="center"><a href="{{ thumbnail_view }}">Thumbnail View</a></p>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+</div>
+{% endblock %}
