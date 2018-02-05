@@ -2,9 +2,23 @@
 {% block title %}Collection Browser{% endblock %}
 {% block body %}
 <h1>{{ cname }}</h1>
+<table width=100%>
+    <tr>
+        <td>
+            {% if prev_page %}
+            <a href="{{ prev_page }}">Previous</a> 
+            {% endif %}
+        </td>
+        <td align="right">
+            {% if next_page %}
+            <a href="{{ next_page }}">Next</a>
+            {% endif %}
+        </td>
+    </tr>
+</table>
 {% if cdesc %}
 <h2>Description</h2>
-{{ cdesc }}
+<p>{{ cdesc }}</p>
 {% endif %}
 {% if members %}
     <h2>Members</h2>
@@ -60,10 +74,21 @@
     {% endfor %}
     </table>
 {% endif %}
-{% if prev_page %}
-<a href="{{ prev_page }}">Previous</a> 
-{% endif %}
-{% if next_page %}
-<a href="{{ next_page }}">Next</a>
+<table width=100%>
+    <tr>
+        <td>
+            {% if prev_page %}
+            <a href="{{ prev_page }}">Previous</a> 
+            {% endif %}
+        </td>
+        <td align="right">
+            {% if next_page %}
+            <a href="{{ next_page }}">Next</a>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+{% if list_view %}
+<p align="center"><a href="{{ list_view }}">List View</a></p>
 {% endif %}
 {% endblock %}
