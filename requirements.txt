@@ -1,1 +1,3 @@
 Flask
+requests
+git+git://github.com/bnbalsamo/pyiiif.git#egg=pyiiif
