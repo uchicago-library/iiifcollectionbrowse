@@ -8,6 +8,11 @@ from flask import Blueprint, render_template, url_for, request
 
 import requests
 
+from pyiiif.pres_api.utils import get_thumbnail
+
+# Hacky workaround
+from urllib.parse import unquote
+
 
 __author__ = "Brian Balsamo"
 __email__ = "brian@brianbalsamo.com"
@@ -30,73 +35,6 @@ COLORS = {
     "thumbnail_backdrop": "#D6D6CE"
 }
 
-
-def get_thumbnail(rec, width=200, height=200, preserve_ratio=True):
-    if preserve_ratio:
-        width = "!"+str(width)
-    # If we pass an identifier just try and
-    # get the record from the identifier.
-    updated = False
-    if not isinstance(rec, dict):
-        try:
-            resp = requests.get(rec, timeout=REQUESTS_TIMEOUT)
-            resp.raise_for_status()
-            rec = resp.json()
-            updated = True
-        except Exception:
-            # TODO: handle failure?
-            raise
-    # Try and update the record from its URI, if we didn't
-    # already just download it.
-    try:
-        if not updated:
-            remote_rec_resp = requests.get(rec['@id'], timeout=REQUESTS_TIMEOUT)
-            remote_rec_resp.raise_for_status()
-            remote_rec_json = remote_rec_resp.json()
-            rec.update(remote_rec_json)
-    except Exception:
-        # Lets hope we have a complete record on our hands, instead
-        # of a stub with just identifiers in it.
-        pass
-    # If one is hardcoded
-    if rec.get('thumbnail'):
-        return rec['thumbnail']['@id']+"/full/{},{}/0/default.jpg".format(width, height)
-    # Dynamic functionality - get the first image that should be relevant
-    if rec['@type'] == "sc:Collection":
-        # prefer the first member, if it exists
-        if rec.get("members"):
-            return get_thumbnail(rec['members'][0])
-        # otherwise try for manifests
-        elif rec.get("manifests"):
-            return get_thumbnail(rec['manifests'][0])
-        # finally check for subcollections
-        elif rec.get("collections"):
-            return get_thumbnail(rec['collections'][0])
-        else:
-            raise ValueError()
-    elif rec['@type'] == "sc:Manifest":
-        # sequences MUST be > 0
-        return get_thumbnail(rec['sequences'][0])
-    elif rec['@type'] == "sc:Sequence":
-        # canvases MUST be > 0
-        return get_thumbnail(rec['canvases'][0])
-    elif rec['@type'] == "sc:Canvas":
-        if rec.get('images'):
-            return get_thumbnail(rec['images'][0])
-        else:
-            raise ValueError()
-    # We made it!
-    elif rec['@type'] == "oa:Annotation":
-        # Be sure we haven't stumbled into something
-        # that isn't an image
-        if rec.get("resource") is None:
-            raise ValueError()
-        # TODO: Actually parse the URL
-        # Time for a hack for just the moment
-        x = rec['resource']['@id']
-        return x.split(".tif")[0] + ".tif" + "/full/{},{}/0/default.jpg".format(width, height)
-    else:
-        raise ValueError()
 
 
 def threaded_thumbnails(identifier, result, index):
@@ -165,7 +103,11 @@ def collection(c_url):
         for i, x in enumerate(members + collections + manifests):
             x['thumb_thread'].join(timeout=10)
             if results[i] is not None:
-                x['thumb_url'] = results[i]
+                # This call to unquote is a hack to get the thumbnails
+                # to work against a Loris server until we figure out
+                # why our apache setup isn't passing escaped URLs through
+                # to the server
+                x['thumb_url'] = unquote(results[i])
             else:
                 x['thumb_url'] = NO_THUMB_IMG_URL
         return render_template(
