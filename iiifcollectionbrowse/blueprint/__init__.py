@@ -2,6 +2,7 @@
 iiifcollectionbrowse
 """
 import logging
+import os
 from threading import Thread
 
 from flask import Blueprint, render_template, url_for, request
@@ -27,14 +28,37 @@ BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
                       static_folder='static')
 
 
-VIEWER_URL = "https://iiif-viewer.lib.uchicago.edu/uv/uv.html#"
-REQUESTS_TIMEOUT = 1/10
-NO_THUMB_IMG_URL = ""
-COLORS = {
-    "contrast_color": "#800000",
-    "thumbnail_backdrop": "#D6D6CE"
+config = {
+    "VIEWER_URL": os.environ.get(
+        "IIIFCOLLBROWSE_VIEWER_URL",
+        "https://iiif-viewer.lib.uchicago.edu/uv/uv.html#"
+    ),
+    "REQUESTS_TIMEOUT": os.environ.get(
+        "IIIFCOLLBROWSE_REQUESTS_TIMEOUT",
+        1
+    ),
+    "NO_THUMB_IMG_URL": os.environ.get(
+        "IIIFCOLLBROWSE_NO_THUMB_IMG_URL",
+        ""
+    ),
+    "CONTRAST_COLOR": os.environ.get(
+        "IIIFCOLLBROWSE_CONTRAST_COLOR",
+        "#800000"
+    ),
+    "THUMBNAIL_BACKDROP": os.environ.get(
+        "IIIFCOLLBROWSE_THUMBNAIL_BACKDROP",
+        "#D6D6CE"
+    )
 }
 
+
+VIEWER_URL = config['VIEWER_URL']
+REQUESTS_TIMEOUT = float(config['REQUESTS_TIMEOUT'])
+NO_THUMB_IMG_URL = config['NO_THUMB_IMG_URL']
+COLORS = {
+    "contrast_color": config['CONTRAST_COLOR'],
+    "thumbnail_backdrop": config['THUMBNAIL_BACKDROP']
+}
 
 
 def threaded_thumbnails(identifier, result, index):
