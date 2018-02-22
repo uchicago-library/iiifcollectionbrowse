@@ -12,7 +12,7 @@ import requests
 from pyiiif.pres_api.utils import get_thumbnail
 
 # Hacky workaround
-from urllib.parse import unquote, quote
+from urllib.parse import unquote
 
 
 __author__ = "Brian Balsamo"
@@ -67,10 +67,15 @@ def threaded_thumbnails(identifier, result, index):
     result[index] = get_thumbnail(identifier)
 
 
-@BLUEPRINT.route("/<path:c_url>")
-def collection(c_url):
+def build_collection_url(ident, page=1):
+    return url_for(".collection") + "?record={}&page={}".format(ident, str(page))
+
+
+@BLUEPRINT.route("/")
+def collection():
     # Try to pull the collection record
-    resp = requests.get(unquote(c_url), timeout=REQUESTS_TIMEOUT)
+    c_url = request.args['record']
+    resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
     resp.raise_for_status()
     rj = resp.json()
     # Parse the record
@@ -85,10 +90,10 @@ def collection(c_url):
         manifests = rj['manifests']
     # build template urls
     for x in collections:
-        x['t_url'] = url_for(".collection", c_url=quote(x['@id'], safe=""))
+        x['t_url'] = build_collection_url(x['@id'])
     for x in members:
         if x['@type'] == "sc:Collection":
-            x['t_url'] = url_for(".collection", c_url=quote(x['@id'], safe=""))
+            x['t_url'] = build_collection_url(x['@id'])
     # Get if the current request is paginated or not
     page = request.args.get("page", 1)
     try:
@@ -107,14 +112,14 @@ def collection(c_url):
         collections = collections[start:end]
         manifests = manifests[start:end]
         # Assemble page links and stuff
-        list_view = "{}?page=-1".format(url_for(".collection", c_url=c_url))
+        list_view = build_collection_url(rj['@id'], page=-1)
         if end > total:
             next_page = None
         else:
-            next_page = "{}?page={}".format(url_for(".collection", c_url=c_url), str(page+1))
+            next_page = build_collection_url(rj['@id'], page=page+1)
         prev_page = None
         if page > 1:
-            prev_page = "{}?page={}".format(url_for(".collection", c_url=c_url), str(page-1))
+            prev_page = build_collection_url(rj['@id'], page=page-1)
         # Handle thumbnail finding for viewingHint == individuals
         # https://stackoverflow.com/questions/6893968/
         # how-to-get-the-return-value-from-a-thread-in-python
@@ -151,7 +156,7 @@ def collection(c_url):
     else:
         thumbnail_view = None
         if rj.get('viewingHint') == 'individuals':
-            thumbnail_view = "{}?page=1".format(url_for(".collection", c_url=c_url))
+            thumbnail_view = build_collection_url(rj['@id'], page=1)
         return render_template(
             "collection_list.html",
             viewer_url=VIEWER_URL,
