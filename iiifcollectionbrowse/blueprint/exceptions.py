@@ -17,3 +17,12 @@ class Error(Exception):
 # the included app errorhandler is used, or if whatever
 # application mounts the blueprint implements a similar
 # error handler.
+
+class NoCollectionFoundError(Error):
+    err_name = "NoCollectionFoundError"
+    status_code = 404
+
+
+class InvalidCollectionRecordError(Error):
+    err_name = "InvalidCollectionRecordError"
+    status_code = 500

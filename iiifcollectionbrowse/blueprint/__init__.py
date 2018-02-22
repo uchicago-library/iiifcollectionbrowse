@@ -5,11 +5,13 @@ import logging
 import os
 from threading import Thread
 
-from flask import Blueprint, render_template, url_for, request
+from flask import Blueprint, render_template, url_for, request, abort
 
 import requests
 
 from pyiiif.pres_api.utils import get_thumbnail
+
+from .exceptions import NoCollectionFoundError, InvalidCollectionRecordError
 
 # Hacky workaround
 from urllib.parse import unquote
@@ -75,9 +77,23 @@ def build_collection_url(ident, page=1):
 def collection():
     # Try to pull the collection record
     c_url = request.args['record']
-    resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
-    resp.raise_for_status()
-    rj = resp.json()
+    try:
+        resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
+        resp.raise_for_status()
+        rj = resp.json()
+    # TODO: No bare excepts
+    # (until then, quiet linter)
+    except Exception as e:
+        raise NoCollectionFoundError(
+            "Could not find a collection JSON record at {}".format(c_url)
+        )
+    for x in ('@id', 'label'):
+        if not rj.get(x):
+            raise InvalidCollectionRecordError(
+                "Could not find '@id' and 'label' keys in the JSON at {}".format(
+                    c_url
+                )
+            )
     # Parse the record
     members = []
     collections = []
@@ -98,6 +114,8 @@ def collection():
     page = request.args.get("page", 1)
     try:
         page = int(page)
+    # TODO: No bare excepts
+    # (until then, quiet linter)
     except Exception:
         page = 1
     # Thumbnail view - paginated
