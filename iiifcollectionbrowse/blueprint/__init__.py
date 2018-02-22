@@ -12,7 +12,7 @@ import requests
 from pyiiif.pres_api.utils import get_thumbnail
 
 # Hacky workaround
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
 
 
 __author__ = "Brian Balsamo"
@@ -70,7 +70,7 @@ def threaded_thumbnails(identifier, result, index):
 @BLUEPRINT.route("/<path:c_url>")
 def collection(c_url):
     # Try to pull the collection record
-    resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
+    resp = requests.get(unquote(c_url), timeout=REQUESTS_TIMEOUT)
     resp.raise_for_status()
     rj = resp.json()
     # Parse the record
@@ -85,10 +85,10 @@ def collection(c_url):
         manifests = rj['manifests']
     # build template urls
     for x in collections:
-        x['t_url'] = url_for(".collection", c_url=x['@id'])
+        x['t_url'] = url_for(".collection", c_url=quote(x['@id'], safe=""))
     for x in members:
         if x['@type'] == "sc:Collection":
-            x['t_url'] = url_for(".collection", c_url=x['@id'])
+            x['t_url'] = url_for(".collection", c_url=quote(x['@id'], safe=""))
     # Get if the current request is paginated or not
     page = request.args.get("page", 1)
     try:
