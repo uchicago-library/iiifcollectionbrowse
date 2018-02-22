@@ -12,7 +12,7 @@ import requests
 from pyiiif.pres_api.utils import get_thumbnail
 
 from .exceptions import NoCollectionFoundError, InvalidCollectionRecordError, \
-    NoCollectionParameterError
+    NoCollectionParameterError, IncompatibleRecordError
 
 # Hacky workaround
 from urllib.parse import unquote
@@ -70,13 +70,48 @@ COLORS = {
 
 
 def threaded_thumbnails(identifier, result, index):
-    # Wrap up this operation so we can use this function
-    # as the target of a threading.Thread
+    """
+    Wraps get_thumbnail() for multi-threaded solutions
+
+    The array should be "initialized" to the correct size,
+    and each thread should deposit it's thumbnail into the
+    appropriate index.
+
+    :rtype: None
+    """
     result[index] = get_thumbnail(identifier)
 
 
 def build_collection_url(ident, page=1):
+    """
+    Builds the URL to render a collection record
+    in this interface.
+
+    :param str ident: The record identifier (a URL)
+    :param str/int page: The page number to render, if using
+        the thumbnail view.
+
+    :rtype: str
+    :returns: The URL which will render the collection record at
+        the provided URL.
+    """
     return url_for(".collection") + "?record={}&page={}".format(ident, str(page))
+
+
+def record_compatible(rec):
+    """
+    Determines if a collection record is compatible with the interface
+
+    :rtype: bool
+    :returns: True if record is compatible, otherwise False.
+    """
+    # TODO
+    # NOTE: This is primarily meant to be a method to provide
+    # for graceful failure. What we do in this case is up in the air.
+    # Link the user to the JSON?
+    # Display a sad-face emoji?
+    # Let the provider register a callback to run?
+    return True
 
 
 @BLUEPRINT.route("/")
@@ -107,6 +142,9 @@ def collection():
                     c_url
                 )
             )
+
+    if not record_compatible(rj):
+        raise IncompatibleRecordError()
     # Parse the record
     members = []
     collections = []
