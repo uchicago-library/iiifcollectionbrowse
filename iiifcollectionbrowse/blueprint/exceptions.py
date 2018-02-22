@@ -26,3 +26,11 @@ class NoCollectionFoundError(Error):
 class InvalidCollectionRecordError(Error):
     err_name = "InvalidCollectionRecordError"
     status_code = 500
+
+class NoCollectionParameterError(Error):
+    err_name = "NoCollectionParameterError"
+    status_code = 500
+    message = "You don't appear to have included " + \
+    "a collection record query parameter (and no " + \
+    "default is set)."
+

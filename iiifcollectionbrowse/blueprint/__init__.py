@@ -5,13 +5,14 @@ import logging
 import os
 from threading import Thread
 
-from flask import Blueprint, render_template, url_for, request, abort
+from flask import Blueprint, render_template, url_for, request
 
 import requests
 
 from pyiiif.pres_api.utils import get_thumbnail
 
-from .exceptions import NoCollectionFoundError, InvalidCollectionRecordError
+from .exceptions import NoCollectionFoundError, InvalidCollectionRecordError, \
+    NoCollectionParameterError
 
 # Hacky workaround
 from urllib.parse import unquote
@@ -31,6 +32,10 @@ BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
 
 
 config = {
+    "DEFAULT_COLLECTION": os.environ.get(
+        "IIIFCOLLBROWSE_DEFAULT_COLL",
+        None
+    ),
     "VIEWER_URL": os.environ.get(
         "IIIFCOLLBROWSE_VIEWER_URL",
         "https://iiif-viewer.lib.uchicago.edu/uv/uv.html#"
@@ -54,6 +59,7 @@ config = {
 }
 
 
+DEFAULT_COLLECTION = config['DEFAULT_COLLECTION']
 VIEWER_URL = config['VIEWER_URL']
 REQUESTS_TIMEOUT = float(config['REQUESTS_TIMEOUT'])
 NO_THUMB_IMG_URL = config['NO_THUMB_IMG_URL']
@@ -75,8 +81,15 @@ def build_collection_url(ident, page=1):
 
 @BLUEPRINT.route("/")
 def collection():
-    # Try to pull the collection record
-    c_url = request.args['record']
+    # Try to pull the collection record, else a default, else error
+    if not request.args.get('record'):
+        if DEFAULT_COLLECTION:
+            c_url = DEFAULT_COLLECTION
+        else:
+            raise NoCollectionParameterError()
+    else:
+        c_url = request.args['record']
+
     try:
         resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
         resp.raise_for_status()
