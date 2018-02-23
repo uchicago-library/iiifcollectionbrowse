@@ -143,8 +143,12 @@ def collection():
                 )
             )
 
+    # Be sure the interface can render this record,
+    # as some valid records may be unrenderable due
+    # to technical constraints.
     if not record_compatible(rj):
         raise IncompatibleRecordError()
+
     # Parse the record
     members = []
     collections = []
