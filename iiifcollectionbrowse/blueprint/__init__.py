@@ -11,8 +11,11 @@ import requests
 
 from pyiiif.pres_api.utils import get_thumbnail
 
+from .exceptions import NoCollectionFoundError, InvalidCollectionRecordError, \
+    NoCollectionParameterError, IncompatibleRecordError
+
 # Hacky workaround
-from urllib.parse import unquote, quote
+from urllib.parse import unquote
 
 
 __author__ = "Brian Balsamo"
@@ -29,6 +32,10 @@ BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
 
 
 config = {
+    "DEFAULT_COLLECTION": os.environ.get(
+        "IIIFCOLLBROWSE_DEFAULT_COLL",
+        None
+    ),
     "VIEWER_URL": os.environ.get(
         "IIIFCOLLBROWSE_VIEWER_URL",
         "https://iiif-viewer.lib.uchicago.edu/uv/uv.html#"
@@ -52,6 +59,7 @@ config = {
 }
 
 
+DEFAULT_COLLECTION = config['DEFAULT_COLLECTION']
 VIEWER_URL = config['VIEWER_URL']
 REQUESTS_TIMEOUT = float(config['REQUESTS_TIMEOUT'])
 NO_THUMB_IMG_URL = config['NO_THUMB_IMG_URL']
@@ -62,17 +70,85 @@ COLORS = {
 
 
 def threaded_thumbnails(identifier, result, index):
-    # Wrap up this operation so we can use this function
-    # as the target of a threading.Thread
+    """
+    Wraps get_thumbnail() for multi-threaded solutions
+
+    The array should be "initialized" to the correct size,
+    and each thread should deposit it's thumbnail into the
+    appropriate index.
+
+    :rtype: None
+    """
     result[index] = get_thumbnail(identifier)
 
 
-@BLUEPRINT.route("/<path:c_url>")
-def collection(c_url):
-    # Try to pull the collection record
-    resp = requests.get(unquote(c_url), timeout=REQUESTS_TIMEOUT)
-    resp.raise_for_status()
-    rj = resp.json()
+def build_collection_url(ident, page=1):
+    """
+    Builds the URL to render a collection record
+    in this interface.
+
+    :param str ident: The record identifier (a URL)
+    :param str/int page: The page number to render, if using
+        the thumbnail view.
+
+    :rtype: str
+    :returns: The URL which will render the collection record at
+        the provided URL.
+    """
+    return url_for(".collection") + "?record={}&page={}".format(ident, str(page))
+
+
+def record_compatible(rec):
+    """
+    Determines if a collection record is compatible with the interface
+
+    :rtype: bool
+    :returns: True if record is compatible, otherwise False.
+    """
+    # TODO
+    # NOTE: This is primarily meant to be a method to provide
+    # for graceful failure. What we do in this case is up in the air.
+    # Link the user to the JSON?
+    # Display a sad-face emoji?
+    # Let the provider register a callback to run?
+    return True
+
+
+@BLUEPRINT.route("/")
+def collection():
+    # Try to pull the collection record, else a default, else error
+    if not request.args.get('record'):
+        if DEFAULT_COLLECTION:
+            c_url = DEFAULT_COLLECTION
+        else:
+            raise NoCollectionParameterError()
+    else:
+        c_url = request.args['record']
+
+    try:
+        resp = requests.get(c_url, timeout=REQUESTS_TIMEOUT)
+        resp.raise_for_status()
+        rj = resp.json()
+    # TODO: No bare excepts
+    # (until then, quiet linter)
+    except Exception as e:
+        raise NoCollectionFoundError(
+            "Could not find a collection JSON record at {}".format(c_url)
+        )
+    for x in ('@id', 'label'):
+        if not rj.get(x):
+            raise InvalidCollectionRecordError(
+                "Could not find '@id' and 'label' keys in the JSON at {}".format(
+                    c_url
+                )
+            )
+
+    # Be sure the interface can render this record,
+    # as some valid records may be unrenderable due
+    # to technical constraints.
+    if not record_compatible(rj):
+        raise IncompatibleRecordError()
+
     # Parse the record
     members = []
     collections = []
@@ -85,14 +161,16 @@ def collection(c_url):
         manifests = rj['manifests']
     # build template urls
     for x in collections:
-        x['t_url'] = url_for(".collection", c_url=quote(x['@id'], safe=""))
+        x['t_url'] = build_collection_url(x['@id'])
     for x in members:
         if x['@type'] == "sc:Collection":
-            x['t_url'] = url_for(".collection", c_url=quote(x['@id'], safe=""))
+            x['t_url'] = build_collection_url(x['@id'])
     # Get if the current request is paginated or not
     page = request.args.get("page", 1)
     try:
         page = int(page)
+    # TODO: No bare excepts
+    # (until then, quiet linter)
     except Exception:
         page = 1
     # Thumbnail view - paginated
@@ -107,14 +185,14 @@ def collection(c_url):
         collections = collections[start:end]
         manifests = manifests[start:end]
         # Assemble page links and stuff
-        list_view = "{}?page=-1".format(url_for(".collection", c_url=c_url))
+        list_view = build_collection_url(rj['@id'], page=-1)
         if end > total:
             next_page = None
         else:
-            next_page = "{}?page={}".format(url_for(".collection", c_url=c_url), str(page+1))
+            next_page = build_collection_url(rj['@id'], page=page+1)
         prev_page = None
         if page > 1:
-            prev_page = "{}?page={}".format(url_for(".collection", c_url=c_url), str(page-1))
+            prev_page = build_collection_url(rj['@id'], page=page-1)
         # Handle thumbnail finding for viewingHint == individuals
         # https://stackoverflow.com/questions/6893968/
         # how-to-get-the-return-value-from-a-thread-in-python
@@ -151,7 +229,7 @@ def collection(c_url):
     else:
         thumbnail_view = None
         if rj.get('viewingHint') == 'individuals':
-            thumbnail_view = "{}?page=1".format(url_for(".collection", c_url=c_url))
+            thumbnail_view = build_collection_url(rj['@id'], page=1)
         return render_template(
             "collection_list.html",
             viewer_url=VIEWER_URL,
