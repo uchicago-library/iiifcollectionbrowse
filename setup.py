@@ -18,7 +18,7 @@ setup(
         ]
     ),
     include_package_data=True,
-    url='https://github.com/bnbalsamo/iiifcollectionbrowse',
+    url='https://github.com/uchicago-library/iiifcollectionbrowse',
     install_requires=[
         'Flask'
     ],
