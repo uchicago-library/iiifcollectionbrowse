@@ -11,7 +11,7 @@ Browses IIIF collections
 ```
 $ git clone https://github.com/uchicago-library/iiifcollectionbrowse
 $ docker build . -t iiifcollectionbrowse
-$ docker run -p 5000:80 -v ../iiifcollecitionbrowse:/code iiifcollectionbrowse
+$ docker run -p 5000:80 -v ../iiifcollectionbrowse:/code iiifcollectionbrowse
 ```
 
 Now open http://localhost:5000/ in your web browser.
