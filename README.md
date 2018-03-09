@@ -6,7 +6,7 @@ v0.0.1
 
 Browses IIIF collections
 
-# Quickstart
+## Quickstart
 
 ```
 $ git clone https://github.com/uchicago-library/iiifcollectionbrowse
@@ -16,5 +16,8 @@ $ docker run -p 5000:80 -v ../iiifcollectionbrowse:/code iiifcollectionbrowse
 
 Now open http://localhost:5000/ in your web browser.
 
-# Author
+## Internal Management
+[Project task items](https://docs.google.com/spreadsheets/d/12tCbNDxhcFOGfHpSguOFPhIOFsFVlb3OLlZJK9wUPk4/edit?usp=sharing)
+
+## Author
 Brian Balsamo <brian@brianbalsamo.com>
