@@ -5,9 +5,23 @@
         {% block head%}
         {% endblock %}
         <title>{% block title %}{% endblock %}</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="//identity.uchicago.edu/c/fonts/proximanova.css">
+
+        <link rel="stylesheet" href="../../../css/reset.css">
+        <link rel="stylesheet" href="../../../css/styles.css">
     </head>
     <body>
-        {% block body %}
-        {% endblock %}
+        <header>
+            <img class="logo" src="../../../images/unvlogo-white.png" />
+            {% block title %}<!-- Digital Collection Browser -->{% endblock %}
+        </header>
+        <main>
+            <section class="leading">
+            </section>
+            {% block body %}
+            {% endblock %}
+        </main>
     </body>
 </html>

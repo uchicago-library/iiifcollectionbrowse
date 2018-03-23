@@ -1,74 +1,56 @@
 {% extends "base.html" %}
-{% block title %}Collection Browser{% endblock %}
+
 {% block body %}
-<div style="background-color:{{ colors['contrast_color']}};">
-    <h1><font color='white'>{{ cname }}</font></h1>
-</div>
-<div style="margin: 0 1%;">
-<table width="100%" align="center">
-    <tr>
-        <td>
-            {% if prev_page %}
-            <a href="{{ prev_page }}">Previous Page</a> 
-            {% endif %}
-        </td>
-        <td align="right">
-            {% if next_page %}
-            <a href="{{ next_page }}">Next Page</a>
-            {% endif %}
-        </td>
-    </tr>
-</table>
+
 {% if cdesc %}
-<h2><font color='{{ colors['contrast_color'] }}'>Description</font></h2>
-<p>{{ cdesc }}</p>
+    <section class="description">
+        <h1>{{ cname }}</h1>
+        <p>{{ cdesc }}</p>
+    </section>
 {% endif %}
+
 {% if members or manifests or collections %}
-<h2><font color="{{ colors['contrast_color'] }}">Resources</font></h2>
-    <table class="table">
-        <thead>
-        <tr align="center">
-            <th>Thumbnail</th>
-            <th>Label</th>
-        </tr>
-        </thead>
-    <tbody>
+    <section class="view-row">
+        {% if prev_page %}
+            <a class="previous" href="{{ prev_page }}">Previous Page</a> 
+        {% endif %}
+
+        {% if list_view %}
+             <a class="list" shref="{{ list_view }}">List View</a>
+        {% endif %}
+
+        {% if next_page %}
+            <a class="next" href="{{ next_page }}">Next Page</a>
+        {% endif %}
+    </section>
+
+    <section class="thumbnails">
     {% for m in members+collections+manifests %}
-    <tr>
-        <td align="center" style="background-color:{{ colors['thumbnail_backdrop'] }}; width: 225px;">
-            <img src="{{ m['thumb_url'] }}">
-        </td>
-        <td style="width: 225px;" align="center">
+        <figure>
             {% if m['@type'] == "sc:Collection" %}
-            <a href="{{ m['t_url'] }}">{{ m['label'] }}
+                <a href="{{ m['t_url'] }}">
             {% else %}
-            <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}
+                <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">
             {% endif %}
-            </a>
-        </td>
-    </tr>
+                <img src="{{ m['thumb_url'] }}">
+                <figcaption>{{ m['label'] }}</figcaption>
+                </a>
+        </figure>
     {% endfor %}
-    </tbody>
-    </table>
 {% endif %}
-<table width="100%" align="center">
-    <tr>
-        <td>
-            {% if prev_page %}
-            <a href="{{ prev_page }}">Previous Page</a> 
-            {% endif %}
-        </td>
-        <td align="center">
-            {% if list_view %}
-            <p align="center"><a href="{{ list_view }}">List View</a></p>
-            {% endif %}
-        </td>
-        <td align="right">
-            {% if next_page %}
-            <a href="{{ next_page }}">Next Page</a>
-            {% endif %}
-        </td>
-    </tr>
-</table>
-</div>
+
+    <section class="view-row">
+        {% if prev_page %}
+            <a class="previous" href="{{ prev_page }}">Previous Page</a> 
+        {% endif %}
+
+        {% if list_view %}
+             <a class="list" shref="{{ list_view }}">List View</a>
+        {% endif %}
+
+        {% if next_page %}
+            <a class="next" href="{{ next_page }}">Next Page</a>
+        {% endif %}
+    </section>
+
 {% endblock %}
