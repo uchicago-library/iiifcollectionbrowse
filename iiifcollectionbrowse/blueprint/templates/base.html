@@ -2,19 +2,19 @@
 <html>
     <head>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        {% block head%}
+        {% block head %}
         {% endblock %}
-        <title>{% block title %}{% endblock %}</title>
+        <title>Test</title>
 
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="//identity.uchicago.edu/c/fonts/proximanova.css">
+        <link rel="stylesheet" href="https://identity.uchicago.edu/c/fonts/proximanova.css">
 
-        <link rel="stylesheet" href="../../../css/reset.css">
-        <link rel="stylesheet" href="../../../css/styles.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/reset.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     </head>
     <body>
         <header>
-            <img class="logo" src="../../../images/unvlogo-white.png" />
+            <img class="logo" src="{{ url_for('static', filename='images/unvlogo-white.png') }}" />
             {% block title %}<!-- Digital Collection Browser -->{% endblock %}
         </header>
         <main>
