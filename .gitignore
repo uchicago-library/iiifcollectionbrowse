@@ -87,3 +87,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Gulp and Styling
+iiifcollectionbrowse/blueprint/templates/index.html
+node_modules/
+package.json
