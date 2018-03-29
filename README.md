@@ -13,11 +13,13 @@ $ git clone https://github.com/uchicago-library/iiifcollectionbrowse
 $ docker build . -t iiifcollectionbrowse
 $ docker run -p 5000:80 -v ../iiifcollectionbrowse:/code iiifcollectionbrowse
 ```
-
 Now open http://localhost:5000/ in your web browser.
 
 ## Internal Management
 [Project task items](https://docs.google.com/spreadsheets/d/12tCbNDxhcFOGfHpSguOFPhIOFsFVlb3OLlZJK9wUPk4/edit?usp=sharing)
+
+## Internal Documentation
+[Getting up and running with Docker](https://github.com/uchicago-library/Library_Digital_Repository_Documentation/wiki/crash-course-docker)
 
 ## Authors
 - Tyler Danstrom (tdansrom@uchicago.edu)
