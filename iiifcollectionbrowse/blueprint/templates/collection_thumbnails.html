@@ -3,14 +3,14 @@
 {% block body %}
 
 {% if cdesc %}
-    <section class="description">
+    <section class="description" role="complementary">
         <h1>{{ cname }}</h1>
         <p>{{ cdesc }}</p>
     </section>
 {% endif %}
 
 {% if members or manifests or collections %}
-    <section class="view-row">
+    <section class="view-row" role="navigation" aria-label="Primary">
         {% if prev_page %}
             <a class="previous" href="{{ prev_page }}">Previous Page</a> 
         {% endif %}
@@ -24,7 +24,7 @@
         {% endif %}
     </section>
 
-    <section class="thumbnails">
+    <section class="thumbnails" id="content" role="main">
     {% for m in members+collections+manifests %}
         <figure>
             {% if m['@type'] == "sc:Collection" %}
@@ -37,9 +37,10 @@
                 </a>
         </figure>
     {% endfor %}
+    </section>
 {% endif %}
 
-    <section class="view-row">
+    <section class="view-row" role="navigation" aria-label="Secondary">
         {% if prev_page %}
             <a class="previous" href="{{ prev_page }}">Previous Page</a> 
         {% endif %}

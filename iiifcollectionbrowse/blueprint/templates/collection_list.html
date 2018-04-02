@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 
-{% block body %}
+{% block body %}\
+
 {% if cdesc %}
-    <section class="description">
+    <section class="description" role="complementary">
         <h1>{{ cname }}</h1>
         <p>{{ cdesc }}</p>
     </section>
 {% endif %}
 
 {% if members or manifests or collections %}
-    <section class="view-row">
+    <section class="view-row" role="navigation" aria-label="Primary">
         {% if prev_page %}
             <a class="previous" href="{{ prev_page }}">Previous Page</a> 
         {% endif %}
@@ -22,20 +23,23 @@
             <a class="next" href="{{ next_page }}">Next Page</a>
         {% endif %}
     </section>
-
-    {% for m in members+manifests+collections %}
-    <li>
-        {% if m['@type'] == "sc:Collection" %}
-        <a href="{{ m['t_url'] }}">{{ m['label'] }}</a>
-        {% else %}
-        <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}</a>
-        {% endif %}
-    </li>
-    {% endfor %}
-</ul>
+    
+    <section id="content" role="main">
+        <ul>
+        {% for m in members+manifests+collections %}
+            <li>
+                {% if m['@type'] == "sc:Collection" %}
+                <a href="{{ m['t_url'] }}">{{ m['label'] }}</a>
+                {% else %}
+                <a href="{{ viewer_url }}?manifest={{ m['@id'] }}">{{ m['label'] }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    </section>
 {% endif %}
 
-    <section class="view-row">
+    <section class="view-row" role="navigation" aria-label="Secondary">
         {% if prev_page %}
             <a class="previous" href="{{ prev_page }}">Previous Page</a> 
         {% endif %}
