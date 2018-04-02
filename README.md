@@ -15,6 +15,14 @@ $ docker run -p 5000:80 -v ../iiifcollectionbrowse:/code iiifcollectionbrowse
 ```
 Now open http://localhost:5000/ in your web browser.
 
+## Alternative quickstart
+
+
+```
+$ git clone https://github.com/uchicago-library/iiifcollectionbrowse
+$ ./debug.sh
+```
+
 ## Internal Management
 [Project task items](https://docs.google.com/spreadsheets/d/12tCbNDxhcFOGfHpSguOFPhIOFsFVlb3OLlZJK9wUPk4/edit?usp=sharing)
 
