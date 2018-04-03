@@ -7,4 +7,6 @@ pytest
 twine
 autopep8
 check-manifest
+selenium
+flask_testing
 git+git://github.com/uchicago-library/pyiiif.git#egg=pyiiif
