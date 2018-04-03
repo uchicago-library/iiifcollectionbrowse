@@ -12,7 +12,6 @@ class Tests(unittest.TestCase):
         app.config["TESTING"] = True
         app.config["WTF_CSRF_ENABLED"] = False
         app.config["DEBUG"] = False
-        print(app)
         self.app = app.test_client()
 
     def tearDown(self):
@@ -26,8 +25,9 @@ class Tests(unittest.TestCase):
 
     def testOpeningHomePage(self):
         driver = webdriver.Firefox()
+        print(driver)
         driver.implicitly_wait(6)
-        driver.get("http://localhost:5000/")
+        driver.get("http://127.0.0.1:5000/")
         driver.find_element_by_id("content")
         print(driver)
         self.assertEqual(True, False)
