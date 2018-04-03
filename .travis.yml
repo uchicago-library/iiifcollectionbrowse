@@ -2,11 +2,17 @@ language: python
 python:
     - "3.5"
 before_script:
-    - pip install python-coveralls
-before_install:
     - "export DISPLAY=:99.0"
     - "sh -e /etc/init.d/xvfb start"
     - sleep 3 # give xvfb time to start
+    - pip install python-coveralls
+addons:
+    - firefox "49.0.2"
+before_install:
+    - wget https://github.com/mozilla/geckodriver/releases/download/v0.20.0/geckodriver-v0.20.0-linux32.tar.gz
+    - mkdir geckodriver
+    - tar -xzf geckodriver-v0.11.1-linux64.tar.gz -C geckodriver
+    - export PATH=$PATH:$PWD/geckodriver
 install: 
     - "pip install -r requirements_dev.txt"
     - "python setup.py install"
@@ -16,3 +22,4 @@ script:
 after_success:
     - coverage report
     - coveralls
+
