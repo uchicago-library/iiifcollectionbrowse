@@ -31,7 +31,7 @@ $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip install requirements.txt
 $ pip install requirements_dev.txt
-$ ./debug.sh
+$ IIIFCOLLBROWSE_DEFAULT_URL=https://iiif-collection.lib.uchicago.edu/top.json ./debug.sh
 ```
 
 #### A quick note about the two different requirements text files: 
