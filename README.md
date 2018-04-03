@@ -40,6 +40,16 @@ requirements.txt file is [the best practice](https://pip.readthedocs.io/en/1.1/r
 
 requirements_dev.txt is the list of third party libraries in order to run all the tests that a good developer ought to be running every time she commits.
 
+## How to run tests locally
+
+```bash
+$ IIIFCOLLBROWSE_DEFAULT_COLL=https://iiif-collection.lib.uchicago.edu/top.json ./debug.sh
+```
+
+This will set the DEFAULT_COLLECTION variable so that going to root of the app without defining a record to read will return the default collection. Otherwise you will have to fill in a collection record with the record GET parameter.
+
+You can also test it by opening up your web browser and navigating to https://localhost:5000/.
+
 ## UChicago Internal Project Information
 
 ### Project Roadmap
