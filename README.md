@@ -1,6 +1,6 @@
 # iiifCollectionBrowse
 
-v0.0.1
+v0.1.0
 
 [![Build Status](https://travis-ci.org/uchicago-library/iiifcollectionbrowse.svg?branch=master)](https://travis-ci.org/uchicago-library/iiifcollectionbrowse) [![Coverage Status](https://coveralls.io/repos/github/uchicago-library/iiifcollectionbrowse/badge.svg?branch=master)](https://coveralls.io/github/uchicago-library/iiifcollectionbrowse?branch=master)
 
