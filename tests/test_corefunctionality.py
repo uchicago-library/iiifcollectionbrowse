@@ -21,7 +21,6 @@ class Tests(unittest.TestCase):
 
     def testGetDefaultCollection(self):
         response = self.app.get("/", follow_redirects=True)
-        print(response.data)
         self.assertEqual(response.status_code, 200)
 
     def testGetSpecificCollection(self):
