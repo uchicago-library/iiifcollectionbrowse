@@ -1,11 +1,11 @@
 import os
+from test.support import EnvironmentVarGuard
 import unittest
 from unittest.mock import patch
 from iiifcollectionbrowse import app
 from selenium import webdriver
 
 class Tests(unittest.TestCase):
-    @patch.dict(os.environ, {'IIIFCOLLBROWSE_DEFAULT_COLL': 'https://iiif-collection.lib.uchicago.edu/top.json'})
     def setUp(self):
         # Perform any setup that should occur
         # before every test
@@ -21,17 +21,12 @@ class Tests(unittest.TestCase):
 
     def testGetDefaultCollection(self):
         response = self.app.get("/", follow_redirects=True)
-        print(app.config)
+        print(response.data)
         self.assertEqual(response.status_code, 200)
 
-    def testOpeningHomePage(self):
-        driver = webdriver.Firefox()
-        print(driver)
-        driver.implicitly_wait(6)
-        driver.get("http://127.0.0.1:5000/")
-        driver.find_element_by_id("content")
-        print(driver)
-        self.assertEqual(True, False)
+    def testGetSpecificCollection(self):
+        response = self.app.get("/?record=https://iiif-collection.lib.uchicago.edu/rac/rac.json", follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
 
 if __name__ == "__main__":
     unittest.main()
