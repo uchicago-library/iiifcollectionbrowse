@@ -29,8 +29,8 @@ $ git clone https://github.com/uchicago-library/iiifcollectionbrowse
 $ cd iiifcollectionbrowse
 $ python3 -m venv venv
 $ source venv/bin/activate
-$ pip install requirements.txt
-$ pip install requirements_dev.txt
+$ pip install -r requirements.txt
+$ pip install -r requirements_dev.txt
 $ IIIFCOLLBROWSE_DEFAULT_COLL=https://iiif-collection.lib.uchicago.edu/top.json ./debug.sh
 ```
 
