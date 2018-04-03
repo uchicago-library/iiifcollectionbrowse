@@ -27,7 +27,7 @@ class Tests(unittest.TestCase):
     def testOpeningHomePage(self):
         driver = webdriver.Firefox()
         driver.implicitly_wait(6)
-        driver.get("http://localhost:8000/")
+        driver.get("http://localhost:5000/")
         driver.find_element_by_id("content")
         print(driver)
         self.assertEqual(True, False)
