@@ -27,8 +27,8 @@ log = logging.getLogger(__name__)
 
 
 BLUEPRINT = Blueprint('iiifcollectionbrowse', __name__,
-                      template_folder='templates',
-                      static_folder='static')
+                      template_folder='../templates',
+                      static_folder='../static')
 
 
 config = {
