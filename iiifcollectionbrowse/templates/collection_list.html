@@ -11,21 +11,22 @@
 
 {% if members or manifests or collections %}
     <section class="view-row" role="navigation" aria-label="Primary">
-        {% if prev_page %}
-            <a class="previous" href="{{ prev_page }}">Previous Page</a> 
+        {% if thumbnail_view %}
+             <a class="grid" href="{{ thumbnail_view }}">Thumbnail View</a>
         {% endif %}
 
-        {% if list_view %}
-             <a class="list" href="{{ list_view }}">List View</a>
-        {% endif %}
-
-        {% if next_page %}
-            <a class="next" href="{{ next_page }}">Next Page</a>
-        {% endif %}
+        <span class="page-links">
+            {% if prev_page %}
+                <a class="previous" href="{{ prev_page }}">Previous Page</a> 
+            {% endif %}
+            {% if next_page %}
+                <a class="next" href="{{ next_page }}">Next Page</a>
+            {% endif %}
+        </span>
     </section>
     
     <section id="content" role="main">
-        <ul>
+        <ul class="collection-list">
         {% for m in members+manifests+collections %}
             <li>
                 {% if m['@type'] == "sc:Collection" %}

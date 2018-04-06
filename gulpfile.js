@@ -1,30 +1,18 @@
 'use strict';
 
 var gulp = require('gulp');
-var sass = require('gulp-sass'); // Requires the gulp-sass plugin
+var sass = require('gulp-sass');
 var browserSync = require('browser-sync').create();
 
 
 gulp.task('sass', function(){
-  return gulp.src('css/**/*.scss') // Gets all files ending with .scss in src/scss and children dirs
+  return gulp.src('iiifcollectionbrowse/static/css/**/*.scss')
     .pipe(sass())
-    .pipe(gulp.dest('css'))
-	.pipe(browserSync.reload({
-      stream: true
-    }))
+    .pipe(gulp.dest('iiifcollectionbrowse/static/css'))
 });
 
-gulp.task('watch', ['browserSync', 'sass'], function(){
-  gulp.watch('css/**/*.scss', ['sass']);
-  gulp.watch('iiifcollectionbrowse/blueprint/templates/*.html', browserSync.reload);
-})
-
-gulp.task('browserSync', function() {
-  browserSync.init({
-    server: {
-      baseDir: './'
-    },
-  })
+gulp.task('watch', ['sass'], function(){
+  gulp.watch('iiifcollectionbrowse/static/css/**/*.scss', ['sass']);
 })
 
 gulp.task("default", ["sass", "watch"], function() {
